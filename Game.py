@@ -6,10 +6,13 @@ from Snake import Snake
 
 
 class Game:
-    CLOCK = 10
+    CLOCK = 30
 
     def __init__(self):
         pygame.init()
+        pygame.font.init()
+
+        self.font = pygame.font.Font('nokiafont.ttf', 20)
 
         self.clock = pygame.time.Clock()
 
@@ -26,7 +29,7 @@ class Game:
 
         self.snake = Snake(point, color)
 
-        self.food = Food()
+        self.food = Food((0, self.font.get_height() + 20))
 
     def run(self):
         while True:
@@ -47,6 +50,8 @@ class Game:
 
             self.generate_grid()
 
+            self.show_score()
+
             self.clock.tick(self.CLOCK)
 
             pygame.display.update()
@@ -55,9 +60,11 @@ class Game:
         quit()
 
     def is_dead(self):
-        not_top = self.snake.position.y >= 0
+        text_height = (self.font.get_height() + 20) // PIXEL_SIZE * PIXEL_SIZE
+
+        not_top = self.snake.position.y >= text_height
         not_bottom = self.snake.position.y <= WINDOW_SIZE[1] - PIXEL_SIZE
-        not_left = self.snake.position.y >= 0
+        not_left = self.snake.position.x >= 0
         not_right = self.snake.position.x <= WINDOW_SIZE[0] - PIXEL_SIZE
 
         valid_position = not_top and not_bottom and not_left and not_right
@@ -68,14 +75,16 @@ class Game:
         return not valid_position
 
     def generate_grid(self):
+        text_height = (self.font.get_height() + 20) // PIXEL_SIZE * PIXEL_SIZE
+
         for col in range(0, WINDOW_SIZE[0], PIXEL_SIZE):
             pygame.draw.rect(
                 self.screen,
                 (25, 25, 25),
-                (col, 0, 1, WINDOW_SIZE[1])
+                (col, text_height, 1, WINDOW_SIZE[1])
             )
 
-        for row in range(0, WINDOW_SIZE[1], PIXEL_SIZE):
+        for row in range(text_height, WINDOW_SIZE[1], PIXEL_SIZE):
             pygame.draw.rect(
                 self.screen,
                 (25, 25, 25),
@@ -139,3 +148,9 @@ class Game:
 
         if distance == Point((0, 0)):
             self.snake.eat(self.food)
+
+    def show_score(self):
+        text = self.font.render(f'Score: {self.snake.total}', False, (255, 255, 255))
+        text_x = (WINDOW_SIZE[0] // 2) - (text.get_width() // 2)
+
+        self.screen.blit(text, (text_x, 10))
